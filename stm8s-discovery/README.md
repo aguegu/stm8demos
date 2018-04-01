@@ -1,4 +1,4 @@
-stm8l-discovery
+stm8s-discover
 ===
 
 * http://www.st.com/en/evaluation-tools/stm8s-discovery.html
