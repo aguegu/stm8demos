@@ -25,7 +25,7 @@ CFLAGS  = -mstm8 -lstm8 --opt-code-size
 
 # set output folder and target name
 OUTPUT_DIR = ./dist
-TARGET     = $(OUTPUT_DIR)/$(notdir $(CURDIR)).hex
+TARGET     := $(addprefix $(OUTPUT_DIR)/, $(notdir $(CURDIR))).hex
 
 # set project folder and files (all *.c)
 PRJ_ROOT    = .
@@ -41,8 +41,10 @@ SPL_INC_DIR = $(SPL_ROOT)/Libraries/STM8S_StdPeriph_Driver/inc
 SPL_SOURCE  = stm8s_gpio.c
 SPL_OBJECTS := $(addprefix $(OUTPUT_DIR)/, $(SPL_SOURCE:.c=.rel))
 
+COMMON_INC = ../common
+
 # collect all include folders
-INCLUDE = -I$(PRJ_SRC_DIR) -I$(SPL_INC_DIR)
+INCLUDE = -I$(PRJ_SRC_DIR) -I$(SPL_INC_DIR) -I$(COMMON_INC)
 
 # collect all source directories
 VPATH=$(PRJ_SRC_DIR):$(SPL_SRC_DIR)
@@ -50,7 +52,6 @@ VPATH=$(PRJ_SRC_DIR):$(SPL_SRC_DIR)
 all: $(OUTPUT_DIR) $(TARGET)
 
 $(OUTPUT_DIR):
-	echo $(SPL_OBJECTS)
 	mkdir -p $(OUTPUT_DIR)
 
 # $(OUTPUT_DIR)/%.rel: %.c
@@ -63,7 +64,7 @@ $(TARGET): $(PRJ_OBJECTS) $(SPL_OBJECTS)
 	$(CC) $(CFLAGS) -o $(TARGET) $^
 
 clean:
-	rm -fr $(OUTPUT_DIR)
+	rm -rf $(OUTPUT_DIR)
 
 flash: all
 	stm8flash -c $(PROGRAMMER) -p $(PLATFORM) -w $(TARGET)
