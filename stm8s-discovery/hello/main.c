@@ -17,8 +17,8 @@
 #define UART_SR_TXE (1 << 7)
 
 int putchar(int c) {
-	while(!(UART2_SR & UART_SR_TXE));
 	UART2_DR = c;
+	while(!(UART2_SR & UART_SR_TXE));
 	return c;
 }
 
