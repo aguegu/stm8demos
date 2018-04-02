@@ -7,13 +7,12 @@ int putchar(int c) {
   return c;
 }
 
-
 void main(void) {
   uint32_t t = 0;
   uint8_t i = 0;
   CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
-  UART2_DeInit();
 
+  UART2_DeInit();
   UART2_Init((uint32_t)9600, UART2_WORDLENGTH_8D, UART2_STOPBITS_1, UART2_PARITY_NO,
               UART2_SYNCMODE_CLOCK_DISABLE, UART2_MODE_TXRX_ENABLE);
 
