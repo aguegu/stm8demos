@@ -34,7 +34,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-// extern void TimingDelay_Decrement(void);
+extern void TimingDelay_Decrement(void);
 /* Public functions ----------------------------------------------------------*/
 
 /** @addtogroup GPIO_Toggle
@@ -454,11 +454,16 @@ INTERRUPT_HANDLER(TIM6_UPD_OVF_TRG_IRQHandler, 23)
   * @param  None
   * @retval None
   */
+// volatile unsigned int t = 0;
 INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23)
 {
 
-  GPIO_WriteReverse(GPIOD, GPIO_PIN_0);
-  // GPIO_WriteLow(GPIOD, GPIO_PIN_0);
+  // if (t & 0x01 == 0) {
+  //   GPIO_WriteReverse(GPIOD, GPIO_PIN_0);
+  // }
+  //
+  // t++;
+  TimingDelay_Decrement();
 
   TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
   /* Cleat Interrupt Pending bit */
