@@ -5,6 +5,7 @@ platforms:
 
 * stm8s-discovery
 * stm8l-discovery
+* stm8s103f3p6 mini (blue)
 
 setup toolchains
 ===
