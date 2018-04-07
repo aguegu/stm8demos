@@ -12,7 +12,7 @@ void main(void) {
 
   while (1) {
     GPIO_WriteReverse(GPIOB, GPIO_PIN_5);
-    Delay(0xf000);
+    Delay(0x4000);
   }
 }
 
