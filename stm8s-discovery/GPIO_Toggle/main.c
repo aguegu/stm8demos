@@ -9,7 +9,7 @@ void main(void) {
 
   while (1) {
     GPIO_WriteReverse(GPIOD, (GPIO_Pin_TypeDef)GPIO_PIN_0);
-    Delay(0x2000);
+    Delay(0xf000);
   }
 }
 
