@@ -19,9 +19,7 @@ void TimingDelay_Decrement(void) {
   }
 }
 
-
 void main(void) {
-  // CLK_SYSCLKDivConfig(CLK_SYSCLKDiv_1);
   CLK_MasterPrescalerConfig(CLK_MasterPrescaler_HSIDiv1);
   CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, ENABLE);
 

@@ -66,7 +66,7 @@ $(TARGET): $(PRJ_OBJECTS) $(SPL_OBJECTS) $(EVAL_OBJECTS) $(EVAL_COMM_OBJECTS)
 	$(CC) $(CFLAGS) -o $(TARGET) $^
 
 clean:
-	rm -fr $(OUTPUT_DIR)
+	rm -rf $(OUTPUT_DIR)
 
 flash: all
 	stm8flash -c $(PROGRAMMER) -p $(PLATFORM) -w $(TARGET)
