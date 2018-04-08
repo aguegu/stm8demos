@@ -16,8 +16,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -78,7 +78,7 @@
 // SDCC patch: __interrupt keyword required after function name --> requires new block
 #elif defined (_SDCC_)
 
- void TRAP_IRQHandler(void);                                          /* TRAP */
+ void TRAP_IRQHandler(void) __trap;                                   /* TRAP */
  void FLASH_IRQHandler(void) INTERRUPT(1);                            /* FLASH EOP/PG_DIS */
  void DMA1_CHANNEL0_1_IRQHandler(void) INTERRUPT(2);                  /* DMA1 Channel0/1*/
  void DMA1_CHANNEL2_3_IRQHandler(void) INTERRUPT(3);                  /* DMA1 Channel2/3*/
