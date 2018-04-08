@@ -1,5 +1,4 @@
 #include "stm8s.h"
-#include "stm8s_it.h"
 
 // TEST LED between vcc and pb5
 
@@ -12,7 +11,7 @@ void main(void) {
 
   while (1) {
     GPIO_WriteReverse(GPIOB, GPIO_PIN_5);
-    Delay(0x2000);
+    Delay(0xf000);
   }
 }
 
