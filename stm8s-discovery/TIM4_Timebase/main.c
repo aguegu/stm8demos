@@ -1,5 +1,5 @@
 #include "stm8s.h"
-#include "stdio.h"
+// #include "stdio.h"
 #include "stm8s_it.h"
 
 // int putchar(int c) {
