@@ -16,14 +16,14 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* SDCC patch: newer version which includes "STM8AF622x" from "STM8S_StdPeriph_Tempate" */
 
@@ -37,7 +37,7 @@
 /* Uncomment the line below to enable peripheral header file inclusion */
 #if defined(STM8S105) || defined(STM8S005) || defined(STM8S103) || defined(STM8S003) ||\
     defined(STM8S903) || defined (STM8AF626x) || defined (STM8AF622x)
-#include "stm8s_adc1.h" 
+#include "stm8s_adc1.h"
 #endif /* (STM8S105) ||(STM8S103) || (STM8S903) || (STM8AF626x) || (STM8AF622x) */
 #if defined(STM8S208) || defined(STM8S207) || defined(STM8S007) || defined (STM8AF52Ax) ||\
     defined (STM8AF62Ax)
@@ -64,7 +64,7 @@
 #if defined(STM8S208) || defined(STM8S207) || defined(STM8S007) ||defined(STM8S105) ||\
     defined(STM8S005) ||  defined (STM8AF52Ax) || defined (STM8AF62Ax) || defined (STM8AF626x)
  #include "stm8s_tim3.h"
-#endif /* (STM8S208) ||defined(STM8S207) || defined(STM8S007) ||defined(STM8S105) */ 
+#endif /* (STM8S208) ||defined(STM8S207) || defined(STM8S007) ||defined(STM8S105) */
 #if !defined(STM8S903) && !defined(STM8AF622x)   /* SDCC patch: see https://github.com/tenbaht/sduino/tree/master/STM8S_StdPeriph_Driver */
  #include "stm8s_tim4.h"
 #endif /* (STM8S903) || (STM8AF622x) */
@@ -85,14 +85,14 @@
 #endif /* STM8S208 || STM8S207 || STM8AF52Ax || STM8AF62Ax */
 #if defined(STM8AF622x)
  #include "stm8s_uart4.h"
-#endif /* (STM8AF622x) */      
+#endif /* (STM8AF622x) */
 #include "stm8s_wwdg.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Uncomment the line below to expanse the "assert_param" macro in the
    Standard Peripheral Library drivers code */
-#define USE_FULL_ASSERT    (1) 
+// #define USE_FULL_ASSERT    (1)
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT
