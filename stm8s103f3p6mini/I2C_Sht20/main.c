@@ -2,7 +2,7 @@
 #include "stm8s.h"
 
 #define FLAG_TIMEOUT         ((uint16_t)0x1000)
-#define LONG_TIMEOUT         ((uint16_t)(15 * FLAG_TIMEOUT))
+#define LONG_TIMEOUT         ((uint16_t)(10 * FLAG_TIMEOUT))
 
 // TEST LED between vcc and pb5
 
@@ -47,24 +47,26 @@ uint8_t i2cMasterTransmit(uint8_t addr, uint8_t * txbuf, uint8_t txbytes, uint8_
   uint8_t step = 0;
 
   do {
-    step++;
-    for (t = LONG_TIMEOUT; I2C_GetFlagStatus(I2C_FLAG_BUSBUSY) && --t;);
-    for (t = LONG_TIMEOUT; I2C_GetFlagStatus(I2C_FLAG_BUSBUSY) && --t;);
+    step++; // 1
+    for (t = LONG_TIMEOUT; I2C_GetFlagStatus(I2C_FLAG_BUSBUSY) && --t;) {
+      I2C_GenerateSTOP(ENABLE);
+      while (I2C->CR2 & I2C_CR2_STOP);
+    }
     // printf("\r\nMASTER BUSBUSY %u", t);
     if (!t) break;
 
-    step++;
+    step++; // 2
     I2C_GenerateSTART(ENABLE);
     for (t = FLAG_TIMEOUT; !I2C_CheckEvent(I2C_EVENT_MASTER_MODE_SELECT) && --t;);
     if (!t) break;
 
-    step++;
+    step++; // 3
     I2C_Send7bitAddress(addr << 1, I2C_DIRECTION_TX);
     for (t = FLAG_TIMEOUT; !I2C_CheckEvent(I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && --t;);
     if (!t) break;
     // printf("\r\nMASTER TRANSMITTER %u", t);
 
-    step++;
+    step++; // 4
     if (txbytes == 1) {
       I2C_SendData(*txbuf);
       for (t = FLAG_TIMEOUT; !I2C_CheckEvent(I2C_EVENT_MASTER_BYTE_TRANSMITTED) && --t;);
@@ -72,19 +74,19 @@ uint8_t i2cMasterTransmit(uint8_t addr, uint8_t * txbuf, uint8_t txbytes, uint8_
       if (!t) break;
     }
 
-    step++;
+    step++; // 4
     I2C_GenerateSTART(ENABLE);  // Restart
     for (t = FLAG_TIMEOUT; !I2C_CheckEvent(I2C_EVENT_MASTER_MODE_SELECT) && --t;);
     // printf("\r\nMASTER Re-Start %u", t);
     if (!t) break;
 
-    step++;
+    step++; // 5
     I2C_Send7bitAddress(addr << 1, I2C_DIRECTION_RX);
     for (t = FLAG_TIMEOUT; !I2C_CheckEvent(I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED) && --t;);
     // printf("\r\nMASTER RECEIVER %u", t);
     if (!t) break;
 
-    step++;
+    step++; // 6
     if (rxbytes == 3) {
       for (t = LONG_TIMEOUT; I2C_GetFlagStatus(I2C_FLAG_TRANSFERFINISHED) == RESET && --t;); /* Poll on BTF */
       if (!t) break;
@@ -100,7 +102,7 @@ uint8_t i2cMasterTransmit(uint8_t addr, uint8_t * txbuf, uint8_t txbytes, uint8_
 
       enableInterrupts();
 
-      step++;
+      step++; // 7
       for (t = FLAG_TIMEOUT; I2C_GetFlagStatus(I2C_FLAG_RXNOTEMPTY) == RESET && --t;);
       if (!t) break;
 
@@ -111,12 +113,17 @@ uint8_t i2cMasterTransmit(uint8_t addr, uint8_t * txbuf, uint8_t txbytes, uint8_
 
   if (step == 8) {
     step = 0;
-  } else {
-    I2C_GenerateSTOP(ENABLE);
   }
   I2C_AcknowledgeConfig(I2C_ACK_CURR);
   return step;
 }
+
+void putFloat(int32_t x) {
+  int16_t y = (int)(x % 100);
+  if (y < 0) y = -y;
+  printf("%ld.%02d", x / 100, y);
+}
+
 
 void main(void) {
   // char ans;
@@ -128,14 +135,34 @@ void main(void) {
 
   CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
 
-  Delay(0x4000);
+  IWDG_Enable();
+
+  /* IWDG timeout equal to 250 ms (the timeout may varies due to LSI frequency
+     dispersion) */
+  /* Enable write access to IWDG_PR and IWDG_RLR registers */
+  IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+
+  /* IWDG counter clock: LSI/128 */
+  IWDG_SetPrescaler(IWDG_Prescaler_256);
+
+  /* Set counter reload value to obtain 250ms IWDG Timeout.
+    Counter Reload Value = 250ms/IWDG counter clock period
+                         = 250ms / (LSI/128)
+                         = 0.25s / (LsiFreq/128)
+                         = LsiFreq/(128 * 4)
+                         = LsiFreq/512
+   */
+  IWDG_SetReload(0xf0);
+
+
+  IWDG_ReloadCounter();
 
   UART1_DeInit();
   UART1_Init((uint32_t)9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
               UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
 
   I2C_DeInit();
-  I2C_Init(400000, 0xA0, I2C_DUTYCYCLE_2, I2C_ACK_CURR, I2C_ADDMODE_7BIT, 16);
+  I2C_Init(300000, 0xA0, I2C_DUTYCYCLE_2, I2C_ACK_CURR, I2C_ADDMODE_7BIT, 16);
 
   while (1) {
     err = i2cMasterTransmit(0x40, s, 1, buff, 3);
@@ -149,7 +176,8 @@ void main(void) {
         // t2 = (float)t * 175.72 / 65536- 46.85;
         // printf("\r\n%lx", t);
         t2 = ((t * 17572) >> 16) - 4685;
-        printf("\r\nT: %ld.%02d", t2 / 100, (int)t2 % 100);
+        printf("\r\nT: ");
+        putFloat(t2);
       } else {
         printf("\r\nE: 8");
       }
@@ -167,7 +195,8 @@ void main(void) {
         // t2 = (float)t * 175.72 / 65536- 46.85;
         t2 = t * 125 / 65536 - 6;
         // printf("\r\n%lx", t);
-        printf(", H: %ld.%02d", t2 / 100, (int)t2 % 100);
+        printf(", H: ");
+        putFloat(t2);
       } else {
         printf("\r\nE: 8");
       }
@@ -175,7 +204,9 @@ void main(void) {
 
     // i2cMasterTransmit(0x40, s+1, 1, buff, 3);
     // printf("\r\ncrc: %02x", checkCrc(buff, 2));
-    getchar();
+    // getchar();
+    Delay(0xf000);
+    IWDG_ReloadCounter();
     // putchar(ans);
   }
 }
