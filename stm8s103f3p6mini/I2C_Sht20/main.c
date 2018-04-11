@@ -135,25 +135,20 @@ void main(void) {
 
   CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
 
-  IWDG_Enable();
+  GPIO_Init(GPIOA, GPIO_PIN_3, GPIO_MODE_OUT_PP_LOW_SLOW);
 
+  // LSI = 128kHz
+  // IWDG counter clock = 128 kHz / 256 = 500 Hz = 1 / 2ms
+  // Reload value = 0.5s * 500Hz = 250
+
+  //
   /* IWDG timeout equal to 250 ms (the timeout may varies due to LSI frequency
      dispersion) */
   /* Enable write access to IWDG_PR and IWDG_RLR registers */
   IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
 
-  /* IWDG counter clock: LSI/128 */
   IWDG_SetPrescaler(IWDG_Prescaler_256);
-
-  /* Set counter reload value to obtain 250ms IWDG Timeout.
-    Counter Reload Value = 250ms/IWDG counter clock period
-                         = 250ms / (LSI/128)
-                         = 0.25s / (LsiFreq/128)
-                         = LsiFreq/(128 * 4)
-                         = LsiFreq/512
-   */
-  IWDG_SetReload(0xf0);
-
+  IWDG_SetReload(250);
 
   IWDG_ReloadCounter();
 
@@ -192,8 +187,7 @@ void main(void) {
 
       if (buff[2] == checkCrc(buff, 2)) {
         t = (((int32_t)buff[0] << 8) + buff[1]) & 0xfffc;
-        // t2 = (float)t * 175.72 / 65536- 46.85;
-        t2 = t * 125 / 65536 - 6;
+        t2 = ((t * 125) >> 16) - 6;
         // printf("\r\n%lx", t);
         printf(", H: ");
         putFloat(t2);
@@ -202,10 +196,12 @@ void main(void) {
       }
     }
 
+    // 100ms to do the job
     // i2cMasterTransmit(0x40, s+1, 1, buff, 3);
     // printf("\r\ncrc: %02x", checkCrc(buff, 2));
     // getchar();
-    Delay(0xf000);
+    GPIO_WriteReverse(GPIOA, GPIO_PIN_3);
+    Delay(0xffff);
     IWDG_ReloadCounter();
     // putchar(ans);
   }
