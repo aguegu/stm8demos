@@ -1,6 +1,7 @@
-#include "stm8s.h"
+#include "stm8s_conf.h"
 
-// TEST LED between vcc and pb5
+// TEST LED between vcc and PB5
+// Oscilloscope on PA3
 
 void Delay(uint16_t t) {
   while (t--);
@@ -13,6 +14,7 @@ void main(void) {
   while (1) {
     GPIO_WriteReverse(GPIOA, GPIO_PIN_3);
     GPIO_WriteReverse(GPIOB, GPIO_PIN_5);
+
     Delay(0xffff);
   }
 }
@@ -22,7 +24,6 @@ void main(void) {
 void assert_failed(u8* file, u32 line) {
   (void) file;
   (void) line;
-
   while (1);
 }
 #endif
