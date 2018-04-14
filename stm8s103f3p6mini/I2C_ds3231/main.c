@@ -2,13 +2,16 @@
 #include "stm8s.h"
 #include "stm8s_it.h"
 
-#define USE_FULL_ASSERT    (1)
+// TEST LED between vcc and PB5, no use
+// Oscilloscope on PA3
+// UART1_TX on PD5
+// UART1_RX on PD6
+// I2C SDA on PB5
+// I2C SCL on PB4
 
-#define FAST_I2C_MODE  (1)
-
-#define delay(a)          { TIM4_tout= a; while(TIM4_tout); }
+#define delay(a)          { TIM4_tout = a; while(TIM4_tout); }
 #define tout()            (TIM4_tout)
-#define set_tout_ms(a)    { TIM4_tout= a; }
+#define set_tout_ms(a)    { TIM4_tout = a; }
 
 volatile u16 TIM4_tout = 0;
 u8 dt[8];
