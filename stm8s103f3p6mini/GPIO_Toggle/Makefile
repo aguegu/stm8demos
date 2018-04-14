@@ -60,8 +60,9 @@ $(OUTPUT_DIR):
 $(OUTPUT_DIR)/%.rel: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -D$(DEVICE) -c $? -o $@
 
-$(TARGET): $(PRJ_OBJECTS) $(SPL_OBJECTS)
-	$(CC) $(CFLAGS) -o $(TARGET) $^
+	$(TARGET): $(PRJ_OBJECTS) $(SPL_OBJECTS)
+		$(CC) $(CFLAGS) -o $(TARGET:.hex=.ihx) $^
+		packihx $(TARGET:.hex=.ihx) > $(TARGET)
 
 clean:
 	rm -rf $(OUTPUT_DIR)
