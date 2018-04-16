@@ -229,7 +229,7 @@ void main(void) {
     GPIO_WriteLow(GPIOA, GPIO_PIN_3);
 
     if (y1 && y2) {
-      printf("y1: %u, y2: %u, ", y1, y2);
+      // printf("y1: %u, y2: %u, ", y1, y2);
       printf("T: ");
       putFloat(t);
       printf(", RH: ");
