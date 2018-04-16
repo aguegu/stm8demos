@@ -27,7 +27,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s_it.h"
-
+#include <stdio.h>
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -350,11 +350,13 @@ INTERRUPT_HANDLER(I2C_IRQHandler, 19)
   /* In order to detect unexpected events during development,
      it is recommended to set a breakpoint on the following instruction.
   */
+  // printf("\r\nerr: %02x; step: %d", I2C->SR2, step);
   // Clear Error Falg
   I2C->SR2= 0;
-  // STOP=1, generate stop
+  // // STOP=1, generate stop
   I2C->CR2 |= 2;
   // Disable Timout
+
   TIM4_tout= 0;
 // Switch on LED3 for I2C Error detection
 // switch_on(LED3);

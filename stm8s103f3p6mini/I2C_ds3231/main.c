@@ -175,33 +175,33 @@ void main(void) {
 
   while (1) {
     // GPIO_WriteReverse(GPIOA, GPIO_PIN_3);
-    set_tout_ms(10);
-    I2C_readRegister(0x68, 0, 1, dt);
-    printf("%02x\r\n", dt[0]);
-
-    set_tout_ms(10);
-    I2C_readRegister(0x68, 0, 2, dt);
-    printf("%02x:%02x\r\n", dt[1], dt[0]);
-
-    set_tout_ms(10);
-    I2C_readRegister(0x68, 0, 3, dt);
-    printf("%02x:%02x:%02x\r\n", dt[2], dt[1], dt[0]);
+    // set_tout_ms(10);
+    // I2C_readRegister(0x68, 0, 1, dt);
+    // printf("%02x\r\n", dt[0]);
+    //
+    // set_tout_ms(10);
+    // I2C_readRegister(0x68, 0, 2, dt);
+    // printf("%02x:%02x\r\n", dt[1], dt[0]);
+    //
+    // set_tout_ms(10);
+    // I2C_readRegister(0x68, 0, 3, dt);
+    // printf("%02x:%02x:%02x\r\n", dt[2], dt[1], dt[0]);
 
     set_tout_ms(10);
     I2C_readRegister(0x68, 0, 7, dt);
     printf("%02x %02x %02x %02x %02x:%02x:%02x\r\n", dt[6], dt[5], dt[4], dt[3], dt[2], dt[1], dt[0]);
 
-    for (u8 i=0; i<7; i++) {
-      dt[i] = (dt[0] >> 4) * 10 + (dt[0] & 0x0f);
-      dt[i] --;
-      if (i == 0) dt[i]--;
-      dt[i] = (dt[0] / 10 << 4) + (dt[0] % 10);
-    }
-
-    set_tout_ms(10);
-    I2C_writeRegister(0x68, 0x00, 7, dt);
-
-    delay(1000);
+    // for (u8 i=0; i<7; i++) {
+    //   dt[i] = (dt[0] >> 4) * 10 + (dt[0] & 0x0f);
+    //   dt[i] --;
+    //   if (i == 0) dt[i]--;
+    //   dt[i] = (dt[0] / 10 << 4) + (dt[0] % 10);
+    // }
+    //
+    // set_tout_ms(10);
+    // I2C_writeRegister(0x68, 0x00, 7, dt);
+    //
+    // delay(1000);
   }
 }
 
