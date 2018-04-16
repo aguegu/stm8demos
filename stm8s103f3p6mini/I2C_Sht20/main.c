@@ -177,21 +177,6 @@ void main(void) {
 
   GPIO_Init(GPIOA, GPIO_PIN_3, GPIO_MODE_OUT_PP_LOW_SLOW);
 
-  // LSI = 128kHz
-  // IWDG counter clock = 128 kHz / 256 = 500 Hz = 1 / 2ms
-  // Reload value = 0.5s * 500Hz = 250 = 0.5s / (2ms) = 250
-
-  //
-  /* IWDG timeout equal to 250 ms (the timeout may varies due to LSI frequency
-     dispersion) */
-  /* Enable write access to IWDG_PR and IWDG_RLR registers */
-  // IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-  //
-  // IWDG_SetPrescaler(IWDG_Prescaler_256);
-  // IWDG_SetReload(250);
-  //
-  // IWDG_ReloadCounter();
-
   UART1_DeInit();
   UART1_Init((uint32_t)9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
               UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
@@ -214,7 +199,17 @@ void main(void) {
 
   delay(20);  // wait for sht20 to get ready
 
+  // LSI = 128kHz / 2 = 64kHz
+  // IWDG counter clock = 64 kHz / 256 = 250 Hz = 1 / 4ms
+  // Reload value = 1s * 250Hz = 1s / (4ms) = 250
+  IWDG_Enable();
+  IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+  IWDG_SetPrescaler(IWDG_Prescaler_256);
+  IWDG_SetReload(250);
+  IWDG_ReloadCounter();
+
   while (1) {
+    GPIO_WriteHigh(GPIOA, GPIO_PIN_3);
     set_tout_ms(200);
     y1 = I2C_readRegister(0x40, 0xe3, dt, 3);
     // printf("\r\nrx: %d:   %02x %02x %02x, %02x", tout(), dt[0], dt[1], dt[2], checkCrc(dt, 2));
@@ -231,21 +226,24 @@ void main(void) {
       rh = (((int32_t)dt[0] << 8) + dt[1]) & 0xfffc;
       rh = ((rh * 125) >> 16) - 6;
     }
+    GPIO_WriteLow(GPIOA, GPIO_PIN_3);
 
     if (y1 && y2) {
+      printf("y1: %u, y2: %u, ", y1, y2);
       printf("T: ");
       putFloat(t);
       printf(", RH: ");
       putFloat(rh);
       printf("\r\n");
-    } else {
-      printf("E: %u, %u\r\n", y1, y2);
+      IWDG_ReloadCounter();
     }
 
-    GPIO_WriteReverse(GPIOA, GPIO_PIN_3);
     delay(600 - y1 - y2);
-    // IWDG_ReloadCounter();
-    // putchar(ans);
+
+    delay(500);
+    if (y1 && y2) {
+      IWDG_ReloadCounter();
+    }
   }
 }
 
