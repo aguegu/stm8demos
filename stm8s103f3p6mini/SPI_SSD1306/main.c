@@ -45,6 +45,8 @@ void main(void) {
 
   GPIO_Init(GPIOA, GPIO_PIN_3, GPIO_MODE_OUT_PP_LOW_SLOW);
 
+  // PRESCALER_2 can run without flag checking
+  // PRESCALER slower than _8 may course ssd1306 first byte glitching
   SPI_Init(SPI_FIRSTBIT_MSB, SPI_BAUDRATEPRESCALER_2, SPI_MODE_MASTER,
            SPI_CLOCKPOLARITY_HIGH, SPI_CLOCKPHASE_2EDGE, SPI_DATADIRECTION_1LINE_TX,
            SPI_NSS_SOFT, 0x07);
