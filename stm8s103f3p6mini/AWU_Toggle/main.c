@@ -74,7 +74,7 @@ void main(void) {
     Delay(0xffff);
     GPIO_WriteLow(GPIOA, GPIO_PIN_3);
     GPIO_WriteHigh(GPIOB, GPIO_PIN_5);
-    Delay(0xffff);
+    // Delay(0xffff);
 
     halt();
   }
