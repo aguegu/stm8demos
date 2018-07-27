@@ -169,7 +169,7 @@ u16 I2C_writeRegister(u8 slave, u8 reg, u8 *txbuff, u8 txlen) {
 
 
 void main(void) {
-  u8 dt[3];
+  u8 i, dt[3];
   s32 t = 0, rh = 0;
   u16 y1, y2;
 
@@ -195,11 +195,20 @@ void main(void) {
   I2C_Init(100000, 0xA0, I2C_DUTYCYCLE_2, I2C_ACK_CURR, I2C_ADDMODE_7BIT, 16);
   I2C_ITConfig(I2C_IT_ERR, ENABLE);
 
-  AWU_Init(AWU_TIMEBASE_2S);
+  AWU_Init(AWU_TIMEBASE_512MS);
 
   enableInterrupts();
 
   delay(20);  // wait for sht20 to get ready
+
+  // LSI = 128kHz / 2 = 64kHz
+  // IWDG counter clock = 64 kHz / 256 = 250 Hz = 1 / 4ms
+  // Reload value = 1s * 250Hz = 1s / (4ms) = 250
+  IWDG_Enable();
+  IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+  IWDG_SetPrescaler(IWDG_Prescaler_256);
+  IWDG_SetReload(250);
+  IWDG_ReloadCounter();
 
   while (1) {
     GPIO_WriteHigh(GPIOA, GPIO_PIN_3);
@@ -229,8 +238,12 @@ void main(void) {
       putFloat(rh);
       printf("\r\n");
       delay(1);
+
+      for (i = 0; i < 4; i++) {
+        IWDG_ReloadCounter();
+        halt();
+      }
     }
-    halt();
   }
 }
 
