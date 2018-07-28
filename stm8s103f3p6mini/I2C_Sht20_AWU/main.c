@@ -238,11 +238,13 @@ void main(void) {
       putFloat(rh);
       printf("\r\n");
       delay(1);
+    }
 
-      for (i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
+      if (y1 && y2) {
         IWDG_ReloadCounter();
-        halt();
       }
+      halt();
     }
   }
 }
