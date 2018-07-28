@@ -174,6 +174,7 @@ void main(void) {
   u16 y1, y2;
 
   CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
+  CLK_SlowActiveHaltWakeUpCmd(ENABLE);
 
   GPIO_Init(GPIOA, GPIO_PIN_3, GPIO_MODE_OUT_PP_LOW_SLOW);
 
