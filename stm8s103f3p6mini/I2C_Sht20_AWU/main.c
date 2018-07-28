@@ -238,7 +238,7 @@ void main(void) {
       printf(", RH: ");
       putFloat(rh);
       printf("\r\n");
-      delay(1);
+      delay(5);
     }
 
     for (i = 0; i < 4; i++) {
