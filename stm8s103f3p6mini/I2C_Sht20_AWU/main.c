@@ -9,8 +9,8 @@
 // I2C SDA on PB5
 // I2C SCL on PB4
 
-#define delay(a)          { TIM4_tout = a; while(TIM4_tout); }
-#define tout()            (TIM4_tout)
+#define delay(a)          { TIM4_tout = a; while(TIM4_tout) wfi(); }
+#define tout()            ( TIM4_tout )
 #define set_tout_ms(a)    { TIM4_tout = a; }
 
 __IO u16 TIM4_tout = 0;
