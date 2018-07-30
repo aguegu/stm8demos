@@ -41,6 +41,7 @@ void main(void) {
 void assert_failed(uint8_t* file, uint32_t line) {
   (void) file;
   (void) line;
+  // printf("Wrong parameters value: file %s on line %d\r\n", file, line);
   while (1);
 }
 
