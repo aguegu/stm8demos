@@ -42,7 +42,4 @@ and then reboot the system.
 reference:
 * https://stackoverflow.com/questions/23312087/error-3-opening-st-link-v2-device
 * https://www.ondrovo.com/a/20170107-stm8-getting-started/
-
-2. STM8-SPL_SDCC_patch may not work for STM8S_StdPeriph_Lib(en.stsw-stm8069.zip) version 2.3.1
-
-track: https://github.com/gicking/STM8-SPL_SDCC_patch/issues/6
+* https://github.com/gicking/STM8-SPL_SDCC_patch/issues/6
