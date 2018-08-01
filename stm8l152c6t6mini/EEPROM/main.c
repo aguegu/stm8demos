@@ -1,6 +1,8 @@
 #include "stm8l15x_conf.h"
 #include <stdio.h>
 
+#define EEPROM_LEN (FLASH_DATA_EEPROM_END_PHYSICAL_ADDRESS - FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS + 1)
+
 int putchar (int c) {
   USART_SendData8(USART1, c);
   while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
@@ -16,8 +18,8 @@ int getchar (void) {
 
 void main(void) {
   char ans;
+  uint16_t p = 0;
   uint8_t * const udid = (uint8_t *)((uint16_t)0x4926); // chip unique 12-byte id
-  // __IO uint8_t * eeprom = (__IO uint8_t *)(FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS);
 
   CLK_SYSCLKDivConfig(CLK_SYSCLKDiv_1);
 
@@ -30,26 +32,31 @@ void main(void) {
               USART_Mode_Rx | USART_Mode_Tx);
 
   printf("\r\nUDID: ");
-  for (uint8_t i=0; i<12; i++) {
+  for (uint8_t i = 0; i < 12; i++) {
     printf("%02x ", udid[i]);
   }
 
-  FLASH_Unlock(FLASH_MemType_Data);
-
-  for (uint16_t i = 0; i < 0x400; i++) {
-    // eeprom[i] = i;
-    FLASH_ProgramByte(FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS + i, ~i);
-    while (!(FLASH->IAPSR & FLASH_IAPSR_EOP));
+  for (p = 0; p < EEPROM_LEN; p++) {
+    if ((p & 0x0f) == 0) {
+      printf("\r\n");
+    }
+    printf("%02x ", FLASH_ReadByte(FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS + p));
   }
 
-  FLASH_Lock(FLASH_MemType_Data);
+  printf("Enter Text to EEPROM: \r\n");
 
-  printf("\r\nUART1 Example :retarget the C library printf()/getchar() functions to the UART\r\n");
-  printf("Enter Text\r\n");
-
+  p = 0;
   while (1) {
     ans = getchar();
-    printf("%c %02x \r\n", ans, ans);
+    printf("%d %c %02x \r\n", p, ans, ans);
+
+    FLASH_Unlock(FLASH_MemType_Data);
+    FLASH_ProgramByte(FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS + p++, ans);
+    if (p >= EEPROM_LEN) {
+      p = 0;
+    }
+    while(!FLASH_GetFlagStatus(FLASH_FLAG_EOP));
+    FLASH_Lock(FLASH_MemType_Data);
   }
 }
 
@@ -58,7 +65,7 @@ void main(void) {
 void assert_failed(uint8_t* file, uint32_t line) {
   (void) file;
   (void) line;
-  printf("Wrong parameters value: file %s on line %d\r\n", file, line);
+  printf("Wrong parameters value: file %s on line %ld\r\n", file, line);
   while (1);
 }
 
