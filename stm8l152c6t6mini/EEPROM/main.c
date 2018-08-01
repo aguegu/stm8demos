@@ -36,6 +36,7 @@ void main(void) {
     printf("%02x ", udid[i]);
   }
 
+  printf("\r\nEEPROM:");
   for (p = 0; p < EEPROM_LEN; p++) {
     if ((p & 0x0f) == 0) {
       printf("\r\n");
@@ -43,12 +44,12 @@ void main(void) {
     printf("%02x ", FLASH_ReadByte(FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS + p));
   }
 
-  printf("Enter Text to EEPROM: \r\n");
+  printf("\r\nEnter Text to EEPROM:\r\n");
 
   p = 0;
   while (1) {
     ans = getchar();
-    printf("%d %c %02x \r\n", p, ans, ans);
+    printf("%d: %c %02x \r\n", p, ans, ans);
 
     FLASH_Unlock(FLASH_MemType_Data);
     FLASH_ProgramByte(FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS + p++, ans);
