@@ -56,14 +56,14 @@ all: $(OUTPUT_DIR) $(TARGET)
 $(OUTPUT_DIR):
 	mkdir -p $(OUTPUT_DIR)
 
-$(OUTPUT_DIR)/%.rel: %.c
-	$(CC) $(CFLAGS) $(INCLUDE) -D$(DEVICE) -c $?
+# $(OUTPUT_DIR)/%.rel: %.c
+# 	$(CC) $(CFLAGS) $(INCLUDE) -D$(DEVICE) -c $?
 #
 $(OUTPUT_DIR)/%.rel: %.c
-	$(CC) $(CFLAGS) $(INCLUDE) -D$(DEVICE) -c $? -o $@
+	$(CC) $(CFLAGS) $(INCLUDE) -D$(DEVICE) -DUSE_FULL_ASSERT -c $? -o $@
 
 $(TARGET): $(PRJ_OBJECTS) $(SPL_OBJECTS)
-	$(CC) $(CFLAGS) -o $(TARGET:.hex=.ihx) $^
+	$(CC) $(CFLAGS) -DUSE_FULL_ASSERT -o $(TARGET:.hex=.ihx) $^
 	packihx $(TARGET:.hex=.ihx) > $(TARGET)
 
 clean:

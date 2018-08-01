@@ -1,4 +1,4 @@
-#include "stm8l15x.h"
+#include "stm8l15x_conf.h"
 #include "stm8l15x_it.h"
 
 // led between VCC and PB0

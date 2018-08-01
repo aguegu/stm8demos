@@ -38,7 +38,7 @@ PRJ_OBJECTS := $(addprefix $(OUTPUT_DIR)/, $(PRJ_SOURCE:.c=.rel))
 SPL_ROOT    = ../../spl/STM8L15x-16x-05x-AL31-L_StdPeriph_Lib
 SPL_SRC_DIR = $(SPL_ROOT)/Libraries/STM8L15x_StdPeriph_Driver/src
 SPL_INC_DIR = $(SPL_ROOT)/Libraries/STM8L15x_StdPeriph_Driver/inc
-SPL_SOURCE  = stm8l15x_gpio.c stm8l15x_exti.c
+SPL_SOURCE  = stm8l15x_gpio.c stm8l15x_clk.c stm8l15x_usart.c stm8l15x_flash.c
 SPL_OBJECTS := $(addprefix $(OUTPUT_DIR)/, $(SPL_SOURCE:.c=.rel))
 
 COMMON_INC = ../common
@@ -56,11 +56,14 @@ all: $(OUTPUT_DIR) $(TARGET)
 $(OUTPUT_DIR):
 	mkdir -p $(OUTPUT_DIR)
 
+# $(OUTPUT_DIR)/%.rel: %.c
+# 	$(CC) $(CFLAGS) $(INCLUDE) -D$(DEVICE) -DUSE_FULL_ASSERT -c $?
+#
 $(OUTPUT_DIR)/%.rel: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -D$(DEVICE) -DUSE_FULL_ASSERT -c $? -o $@
 
 $(TARGET): $(PRJ_OBJECTS) $(SPL_OBJECTS)
-	$(CC) $(CFLAGS) -DUSE_FULL_ASSERT -o $(TARGET:.hex=.ihx) $^
+	$(CC) $(CFLAGS) -o $(TARGET:.hex=.ihx) $^
 	packihx $(TARGET:.hex=.ihx) > $(TARGET)
 
 clean:
@@ -69,4 +72,8 @@ clean:
 flash: all
 	stm8flash -c $(PROGRAMMER) -p $(PLATFORM) -w $(TARGET)
 
-.PHONY: clean flash
+read_eeprom:
+	stm8flash -c $(PROGRAMMER) -p $(PLATFORM) -s eeprom -r eeprom.bin
+	hexdump -vC eeprom.bin
+
+.PHONY: clean flash read_eeprom
