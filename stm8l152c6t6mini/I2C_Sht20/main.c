@@ -198,8 +198,6 @@ void main(void) {
   IWDG_SetReload(148);
   IWDG_ReloadCounter();
 
-  printf("\r\nCLK: %ld\r\n", CLK_GetClockFreq());
-
   while (1) {
     GPIO_WriteBit(GPIOB, GPIO_Pin_0, SET);
     set_tout_ms(100);
