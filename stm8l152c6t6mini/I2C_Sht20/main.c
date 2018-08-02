@@ -190,38 +190,51 @@ void main(void) {
   enableInterrupts();
   TIM4_Cmd(ENABLE);
 
-  printf("\r\nCLK: %ld", CLK_GetClockFreq());
+  //  (RELOAD_VALUE + 1) * Prescaler / LSI
+  //  = 149 * 256 / 38000 = 1.003
+  IWDG_Enable();
+  IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+  IWDG_SetPrescaler(IWDG_Prescaler_256);
+  IWDG_SetReload(148);
+  IWDG_ReloadCounter();
+
+  printf("\r\nCLK: %ld\r\n", CLK_GetClockFreq());
 
   while (1) {
     GPIO_WriteBit(GPIOB, GPIO_Pin_0, SET);
-    set_tout_ms(200);
+    set_tout_ms(100);
     y1 = I2C_Read(I2C1, 0x40, 0xe3, dt, 3);
-    printf("\r\nrx: %3d:   %02x %02x %02x, %02x", tout(), dt[0], dt[1], dt[2], checkCrc(dt, 2));
-    if (dt[2] == checkCrc(dt, 2)) {
+    // printf("\r\nrx: %3d:   %02x %02x %02x, %02x", tout(), dt[0], dt[1], dt[2], checkCrc(dt, 2));
+    if (y1 && dt[2] == checkCrc(dt, 2)) {
       t = (((int32_t)dt[0] << 8) + dt[1]) & 0xfffc;
       t = ((t * 17572) >> 16) - 4685;
     }
     //
     set_tout_ms(100);
     y2 = I2C_Read(I2C1, 0x40, 0xe5, dt, 3);
-    printf("\r\nrx: %3d:   %02x %02x %02x, %02x", tout(), dt[0], dt[1], dt[2], checkCrc(dt, 2));
+    // printf("\r\nrx: %3d:   %02x %02x %02x, %02x", tout(), dt[0], dt[1], dt[2], checkCrc(dt, 2));
 
-    if (dt[2] == checkCrc(dt, 2)) {
+    if (y2 && dt[2] == checkCrc(dt, 2)) {
       rh = (((int32_t)dt[0] << 8) + dt[1]) & 0xfffc;
       rh = ((rh * 125) >> 16) - 6;
     }
     GPIO_WriteBit(GPIOB, GPIO_Pin_0, RESET);
 
     if (y1 && y2) {
-      printf("\r\ny1: %u, y2: %u", y1, y2);
-      printf("\r\nT: ");
+      // printf("\r\ny1: %u, y2: %u", y1, y2);
+      printf("T: ");
       putFloat(t);
       printf(", RH: ");
       putFloat(rh);
       printf("\r\n");
+      IWDG_ReloadCounter();
     }
 
-    delay(1000);
+    delay(500 - y1 - y2);
+    delay(500);
+    if (y1 && y2) {
+      IWDG_ReloadCounter();
+    }
   }
 }
 
