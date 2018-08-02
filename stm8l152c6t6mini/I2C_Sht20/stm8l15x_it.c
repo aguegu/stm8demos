@@ -42,7 +42,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-extern __IO uint32_t TimingDelay;
+extern u16 TIM4_tout;
 
 /* Private functions ---------------------------------------------------------*/
 /* Public functions ----------------------------------------------------------*/
@@ -362,8 +362,8 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
   /* In order to detect unexpected events during development,
      it is recommended to set a breakpoint on the following instruction.
   */
-  if (TimingDelay) {
-    TimingDelay--;
+  if (TIM4_tout) {
+    TIM4_tout--;
   }
 
   /* Cleat Interrupt Pending bit */
@@ -415,6 +415,11 @@ INTERRUPT_HANDLER(I2C1_SPI2_IRQHandler, 29)
   /* In order to detect unexpected events during development,
      it is recommended to set a breakpoint on the following instruction.
   */
+  I2C1->SR2 = 0;
+// STOP=1, generate stop
+  I2C_GenerateSTOP(I2C1, ENABLE);
+  // Disable Timout
+  TIM4_tout= 0;
 }
 
 /**

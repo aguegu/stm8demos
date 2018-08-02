@@ -38,24 +38,23 @@ void putFloat(int32_t x) {
   printf("%ld.%02d", x / 100, y);
 }
 
-u16 I2C_readRegister(I2C_TypeDef* I2Cx, u8 slave, u8 reg, u8 *rxbuff, u8 rxlen) {
+u16 I2C_Read(I2C_TypeDef* I2Cx, u8 slave, u8 reg, u8 *rxbuff, u8 rxlen) {
   while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY) && tout()) {
     I2C_GenerateSTOP(I2Cx, ENABLE);
     while (I2Cx->CR2 & I2C_CR2_STOP && tout());
   }
 
-  I2C_AcknowledgeConfig(I2Cx, I2C_ACK_CURR);
+  I2C_AcknowledgeConfig(I2Cx, ENABLE);
   I2C_GenerateSTART(I2Cx, ENABLE);
   while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_MODE_SELECT) && tout());
 
   if(tout()) {
-    I2C_Send7bitAddress(I2Cx, (u8)(slave << 1), I2C_DIRECTION_TX);
+    I2C_Send7bitAddress(I2Cx, (u8)(slave << 1), I2C_Direction_Transmitter);
   }
-  // while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && tout());
-  while(!(I2Cx->SR1 & I2C_SR1_ADDR) && tout()); 				// test EV6 - wait for address ack (ADDR)
+  while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && tout());
 
   I2Cx->SR3;
-  while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_TXEMPTY) && tout());
+  while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_TXE) && tout());
 
   if (tout()) {
     I2C_SendData(I2Cx, reg);
@@ -66,7 +65,7 @@ u16 I2C_readRegister(I2C_TypeDef* I2Cx, u8 slave, u8 reg, u8 *rxbuff, u8 rxlen) 
   while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_MODE_SELECT) && tout());
 
   if(tout()) {
-    I2C_Send7bitAddress(I2Cx, (u8)(slave << 1), I2C_DIRECTION_RX);
+    I2C_Send7bitAddress(I2Cx, (u8)(slave << 1), I2C_Direction_Receiver);
   }
   while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED) && tout());
 
@@ -74,52 +73,53 @@ u16 I2C_readRegister(I2C_TypeDef* I2Cx, u8 slave, u8 reg, u8 *rxbuff, u8 rxlen) 
     I2Cx->SR3;                                            // ADDR clearing sequence
 
     while (rxlen > 3 && tout()) {
-      while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_TRANSFERFINISHED) == RESET && tout());
+      while (!I2C_GetFlagStatus(I2Cx, I2C_FLAG_BTF) && tout());
       *rxbuff++ = I2C_ReceiveData(I2Cx);
       --rxlen;
     }
 
-    while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_TRANSFERFINISHED) == RESET && tout());
-    I2C_AcknowledgeConfig(I2Cx, I2C_ACK_NONE);
+    while (!I2C_GetFlagStatus(I2Cx, I2C_FLAG_BTF) && tout());
+    I2C_AcknowledgeConfig(I2Cx, DISABLE);
     disableInterrupts();                               // Errata workaround (Disable interrupt)
     *rxbuff++ = I2C_ReceiveData(I2Cx);
     I2C_GenerateSTOP(I2Cx, ENABLE);
     *rxbuff++ = I2C_ReceiveData(I2Cx);
     enableInterrupts();		                             // Errata workaround (Enable interrupt)
 
-    while(I2C_GetFlagStatus(I2Cx, I2C_FLAG_RXNOTEMPTY) == RESET && tout());
+    while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_RXNE) && tout());
     *rxbuff++ = I2C_ReceiveData(I2Cx);
 
   } else if(rxlen == 2) {
-    I2C_AcknowledgeConfig(I2Cx, I2C_ACK_NEXT);
+    // I2C_AcknowledgeConfig(I2Cx, I2C_ACK_NEXT);
+    I2C_PECPositionConfig(I2Cx, I2C_PECPosition_Next);
     disableInterrupts();                          		// Errata workaround (Disable interrupt)
     I2Cx->SR3;                                       	// Clear ADDR Flag
-    I2C_AcknowledgeConfig(I2Cx, I2C_ACK_NONE);
+    I2C_AcknowledgeConfig(I2Cx, DISABLE);
     enableInterrupts();	                              // Errata workaround (Enable interrupt)
-    while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_TRANSFERFINISHED) == RESET && tout());
+    while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_BTF) == RESET && tout());
     disableInterrupts();                          		// Errata workaround (Disable interrupt)
     I2C_GenerateSTOP(I2Cx, ENABLE);
     *rxbuff++ = I2C_ReceiveData(I2Cx);
     enableInterrupts();	                              // Errata workaround (Enable interrupt)
     *rxbuff++ = I2C_ReceiveData(I2Cx);
   } else {
-    I2C_AcknowledgeConfig(I2Cx, I2C_ACK_NONE);
+    I2C_AcknowledgeConfig(I2Cx, DISABLE);
     disableInterrupts();                          		// Errata workaround (Disable interrupt)
     I2Cx->SR3;                                       	// Clear ADDR Flag
     I2C_GenerateSTOP(I2Cx, ENABLE);
     enableInterrupts();	                              // Errata workaround (Enable interrupt)
-    while(I2C_GetFlagStatus(I2Cx, I2C_FLAG_RXNOTEMPTY) == RESET && tout());
+    while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_RXNE) && tout());
     *rxbuff = I2C_ReceiveData(I2Cx);
   }
 
   while((I2Cx->CR2 & I2C_CR2_STOP) && tout());
-  I2C_AcknowledgeConfig(I2Cx, I2C_ACK_CURR);
+  I2C_AckPositionConfig(I2Cx, I2C_AckPosition_Current);
 
   return tout();
 }
 
 u16 I2C_writeRegister(I2C_TypeDef* I2Cx, u8 slave, u8 reg, u8 *txbuff, u8 txlen) {
-  while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSBUSY) && tout()) {
+  while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY) && tout()) {
     I2C_GenerateSTOP(I2Cx, ENABLE);
     while (I2Cx->CR2 & I2C_CR2_STOP && tout());
   }
@@ -128,20 +128,20 @@ u16 I2C_writeRegister(I2C_TypeDef* I2Cx, u8 slave, u8 reg, u8 *txbuff, u8 txlen)
   while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_MODE_SELECT) && tout());
 
   if (tout()) {
-    I2C_Send7bitAddress(I2Cx, (u8)(slave << 1), I2C_DIRECTION_TX);
+    I2C_Send7bitAddress(I2Cx, (u8)(slave << 1), I2C_Direction_Transmitter);
   }
 
   while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && tout());
 
   I2Cx->SR3;
 
-  while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_TXEMPTY) && tout());
+  while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_TXE) && tout());
   if (tout()) {
     I2C_SendData(I2Cx, reg);
   }
   if (txlen) {
     while (txlen--) {
-      while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_TXEMPTY) && tout());
+      while(!I2C_GetFlagStatus(I2Cx, I2C_FLAG_TXE) && tout());
       I2C_SendData(I2Cx, *txbuff++);
     }
   }
@@ -154,12 +154,26 @@ u16 I2C_writeRegister(I2C_TypeDef* I2Cx, u8 slave, u8 reg, u8 *txbuff, u8 txlen)
 }
 
 void main(void) {
+  u8 dt[3];
+  s32 t = 0, rh = 0;
+  u16 y1, y2;
+
   CLK_SYSCLKDivConfig(CLK_SYSCLKDiv_1);
 
   CLK_PeripheralClockConfig(CLK_Peripheral_USART1, ENABLE);
+  CLK_PeripheralClockConfig(CLK_Peripheral_I2C1, ENABLE);
+  I2C_DeInit(I2C1);
+  I2C_Init(I2C1, 400000, 0xA0, I2C_Mode_I2C,
+           I2C_DutyCycle_2, I2C_Ack_Enable, I2C_AcknowledgedAddress_7bit);
 
-  GPIO_ExternalPullUpConfig(GPIOC, GPIO_Pin_2, ENABLE); // RX
-  GPIO_ExternalPullUpConfig(GPIOC, GPIO_Pin_3, ENABLE); // TX
+  I2C_ITConfig(I2C1, I2C_IT_ERR, ENABLE);
+  I2C_Cmd(I2C1, ENABLE);
+
+  GPIO_Init(GPIOC, GPIO_Pin_0, GPIO_Mode_Out_OD_HiZ_Fast);  // I2C1 SDA
+  GPIO_Init(GPIOC, GPIO_Pin_1, GPIO_Mode_Out_OD_HiZ_Fast);  // I2C1 SCL
+
+  GPIO_ExternalPullUpConfig(GPIOC, GPIO_Pin_2, ENABLE); // UART1 RX
+  GPIO_ExternalPullUpConfig(GPIOC, GPIO_Pin_3, ENABLE); // UART1 TX
 
   USART_Init(USART1, (uint32_t)9600, USART_WordLength_8b, USART_StopBits_1, USART_Parity_No,
               USART_Mode_Rx | USART_Mode_Tx);
@@ -176,9 +190,38 @@ void main(void) {
   enableInterrupts();
   TIM4_Cmd(ENABLE);
 
+  printf("\r\nCLK: %ld", CLK_GetClockFreq());
+
   while (1) {
-    GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
-    delay(50);
+    GPIO_WriteBit(GPIOB, GPIO_Pin_0, SET);
+    set_tout_ms(200);
+    y1 = I2C_Read(I2C1, 0x40, 0xe3, dt, 3);
+    printf("\r\nrx: %3d:   %02x %02x %02x, %02x", tout(), dt[0], dt[1], dt[2], checkCrc(dt, 2));
+    if (dt[2] == checkCrc(dt, 2)) {
+      t = (((int32_t)dt[0] << 8) + dt[1]) & 0xfffc;
+      t = ((t * 17572) >> 16) - 4685;
+    }
+    //
+    set_tout_ms(100);
+    y2 = I2C_Read(I2C1, 0x40, 0xe5, dt, 3);
+    printf("\r\nrx: %3d:   %02x %02x %02x, %02x", tout(), dt[0], dt[1], dt[2], checkCrc(dt, 2));
+
+    if (dt[2] == checkCrc(dt, 2)) {
+      rh = (((int32_t)dt[0] << 8) + dt[1]) & 0xfffc;
+      rh = ((rh * 125) >> 16) - 6;
+    }
+    GPIO_WriteBit(GPIOB, GPIO_Pin_0, RESET);
+
+    if (y1 && y2) {
+      printf("\r\ny1: %u, y2: %u", y1, y2);
+      printf("\r\nT: ");
+      putFloat(t);
+      printf(", RH: ");
+      putFloat(rh);
+      printf("\r\n");
+    }
+
+    delay(1000);
   }
 }
 
