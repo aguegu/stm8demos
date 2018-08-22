@@ -15,7 +15,6 @@ static u8 buff[1024];
 
 void display() {
 	for (u8 i=0; i<8; i++) {
-
 		DMA_Init(DMA1_Channel2, (u16)(buff + i * 128), (uint16_t)0x5204, \
 	           128, DMA_DIR_MemoryToPeripheral, DMA_Mode_Normal, \
 	           DMA_MemoryIncMode_Inc, DMA_Priority_High, DMA_MemoryDataSize_Byte);
@@ -25,12 +24,12 @@ void display() {
 	}
 }
 
-static void DMA_Config(void) {
+static void init(void) {
 	DMA_GlobalDeInit();
+	DMA_DeInit(DMA1_Channel2);
 	DMA_SetTimeOut(0x3F);
 	DMA_GlobalCmd(ENABLE);
 	SPI_DMACmd(SPI1, SPI_DMAReq_TX, ENABLE);
-	DMA_DeInit(DMA1_Channel2);
 }
 
 void main(void) {
@@ -60,21 +59,14 @@ void main(void) {
     SPI_SendData(SPI1, s[i]);
   }
 
-	DMA_Config();
+	init();
 
 	GPIO_WriteBit(GPIOB, GPIO_Pin_2, SET);
   while (1) {
-		// for (u16 i=0; i<4; i++) {
-		// 	memset(buff + i * 256, c++, 256);
-		// }
 		memset(buff, c++, 1024);
 
     display();
 		GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
-		// Delay(0xff00);
-		// Delay(0xff00);
-		// Delay(0xff00);
-		// Delay(0xff00);
   }
 }
 
