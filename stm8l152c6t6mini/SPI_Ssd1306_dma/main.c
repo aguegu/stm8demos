@@ -14,13 +14,18 @@ void Delay (uint16_t nCount);
 static u8 buff[1024];
 
 void display() {
+	u16 addr;
 	for (u8 i=0; i<8; i++) {
-		DMA_Init(DMA1_Channel2, (u16)(buff + i * 128), (uint16_t)0x5204, \
-	           128, DMA_DIR_MemoryToPeripheral, DMA_Mode_Normal, \
-	           DMA_MemoryIncMode_Inc, DMA_Priority_High, DMA_MemoryDataSize_Byte);
+		addr = (u16)(buff + (i << 7));
+
+		DMA1_Channel2->CM0ARH = (u8)(addr >> 8);
+		DMA1_Channel2->CM0ARL = (u8)addr;
+		DMA1_Channel2->CNBTR = 128;
+
 		DMA_Cmd(DMA1_Channel2, ENABLE);
 		while (!DMA_GetFlagStatus(DMA1_FLAG_TC2));
 		DMA_ClearFlag(DMA1_FLAG_TC2);
+		DMA_Cmd(DMA1_Channel2, DISABLE);
 	}
 }
 
@@ -30,6 +35,9 @@ static void init(void) {
 	DMA_SetTimeOut(0x3F);
 	DMA_GlobalCmd(ENABLE);
 	SPI_DMACmd(SPI1, SPI_DMAReq_TX, ENABLE);
+	DMA_Init(DMA1_Channel2, (u16)(buff), (uint16_t)0x5204, \
+					 128, DMA_DIR_MemoryToPeripheral, DMA_Mode_Normal, \
+					 DMA_MemoryIncMode_Inc, DMA_Priority_High, DMA_MemoryDataSize_Byte);
 }
 
 void main(void) {
@@ -63,6 +71,9 @@ void main(void) {
 
 	GPIO_WriteBit(GPIOB, GPIO_Pin_2, SET);
   while (1) {
+		// for (u16 i=0; i<8; i++) {
+		// 	memset(buff + (i * 128), c++, 128);
+		// }
 		memset(buff, c++, 1024);
 
     display();
