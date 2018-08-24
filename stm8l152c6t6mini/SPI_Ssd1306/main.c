@@ -38,7 +38,7 @@ void main(void) {
   GPIO_ExternalPullUpConfig(GPIOB, GPIO_Pin_5 | GPIO_Pin_6, ENABLE);
 
   SPI_Init(SPI1, SPI_FirstBit_MSB, SPI_BaudRatePrescaler_2, SPI_Mode_Master,
-           SPI_CPOL_High, SPI_CPHA_2Edge, SPI_Direction_1Line_Tx,
+           SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_Direction_1Line_Tx,
            SPI_NSS_Soft, 0x07);
 
   GPIO_Init(GPIOB, GPIO_Pin_1, GPIO_Mode_Out_PP_Low_Slow);

@@ -51,7 +51,7 @@ void main(void) {
   GPIO_ExternalPullUpConfig(GPIOB, GPIO_Pin_5 | GPIO_Pin_6, ENABLE);
 
   SPI_Init(SPI1, SPI_FirstBit_MSB, SPI_BaudRatePrescaler_2, SPI_Mode_Master,
-           SPI_CPOL_High, SPI_CPHA_2Edge, SPI_Direction_1Line_Tx,
+           SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_Direction_1Line_Tx,
            SPI_NSS_Soft, 0x07);
 
   GPIO_Init(GPIOB, GPIO_Pin_1, GPIO_Mode_Out_PP_Low_Slow);
@@ -71,13 +71,22 @@ void main(void) {
 
 	GPIO_WriteBit(GPIOB, GPIO_Pin_2, SET);
   while (1) {
-		// for (u16 i=0; i<8; i++) {
-		// 	memset(buff + (i * 128), c++, 128);
-		// }
-		memset(buff, c++, 1024);
+		for (u16 i=0; i<6; i++) {
+			memset(buff + (i << 7), c++, 128);
+		}
+		for (u16 i=0;  i<256; i++) {
+			buff[1023 - i] = c + i;
+		}
+
+		// memset(buff, c++, 1024);
 
     display();
 		GPIO_ToggleBits(GPIOB, GPIO_Pin_0);
+
+		Delay(0xff00);
+		Delay(0xff00);
+		Delay(0xff00);
+		Delay(0xff00);
   }
 }
 
