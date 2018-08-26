@@ -13,7 +13,6 @@ void main(void) {
 
   GPIO_Init(GPIOB, GPIO_Pin_0, GPIO_Mode_Out_PP_Low_Slow);
 
-  GPIO_Init(GPIOB, GPIO_Pin_0, GPIO_Mode_Out_PP_Low_Slow);
   GPIO_Init(GPIOC, GPIO_Pin_7, GPIO_Mode_In_FL_IT);
   EXTI_SetPinSensitivity(EXTI_Pin_7, EXTI_Trigger_Falling);
 
