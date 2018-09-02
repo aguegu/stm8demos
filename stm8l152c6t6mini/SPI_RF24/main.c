@@ -51,11 +51,8 @@
 
 __IO uint32_t TimingDelay;
 
-GPIO_TypeDef * gpio_csn = GPIOB;
-u8 pin_csn = GPIO_Pin_2;
-
-void csn(bool mode) {
-  GPIO_WriteBit(gpio_csn, pin_csn, mode);
+void csn(BitAction val) {
+	GPIO_WriteBit(GPIOB, GPIO_Pin_2, val);
 }
 
 void ce(BitAction val) {
