@@ -43,3 +43,4 @@ reference:
 * https://stackoverflow.com/questions/23312087/error-3-opening-st-link-v2-device
 * https://www.ondrovo.com/a/20170107-stm8-getting-started/
 * https://github.com/gicking/STM8-SPL_SDCC_patch/issues/6
+* https://github.com/vdudouyt/stm8flash
