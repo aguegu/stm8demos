@@ -8,7 +8,7 @@ RUN apt-get -y update \
 RUN mkdir -p /root/spl
 WORKDIR /root/spl
 
-COPY spl/en.stsw-stm8012.zip  spl/en.stsw-stm8016.zip  spl/en.stsw-stm8030.zip  spl/en.stsw-stm8069.zip .
+COPY spl/en.stsw-stm8012.zip  spl/en.stsw-stm8016.zip  spl/en.stsw-stm8030.zip  spl/en.stsw-stm8069.zip ./
 
 
 # FROM debian:buster-slim
