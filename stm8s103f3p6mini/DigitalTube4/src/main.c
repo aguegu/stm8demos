@@ -27,9 +27,18 @@ typedef struct {
   GPIO_Pin_TypeDef pin;
 } Pin;
 
+extern volatile uint16_t millis;
 
-void Delay(uint16_t t) {
-  while (t--);
+void delay(uint16_t ms) {
+  uint16_t start = millis;
+
+  while (ms) {
+    if (millis - start) {
+      ms--;
+      start++;
+    }
+    wfi();
+  }
 }
 
 void showNumber(uint8_t *p, uint16_t n) {
@@ -62,6 +71,15 @@ void main(void) {
     { .port = GPIOD, .pin = GPIO_PIN_5 },
     { .port = GPIOA, .pin = GPIO_PIN_3 },
   };
+
+  CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
+
+  TIM4_TimeBaseInit(TIM4_PRESCALER_128, 124);
+  TIM4_ClearFlag(TIM4_FLAG_UPDATE);
+  TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);
+  enableInterrupts();
+
+  TIM4_Cmd(ENABLE);
 
   uint16_t cnt = 0;
   uint8_t patterns[4] = {0};
@@ -103,7 +121,7 @@ void main(void) {
     }
     GPIO_WriteReverse(ranks[r].port, ranks[r].pin);
 
-    Delay(0x400);
+    delay(4);
 
     for (uint8_t i=0; i<8; i++) {
       if (patterns[r] & (1 << i)) {

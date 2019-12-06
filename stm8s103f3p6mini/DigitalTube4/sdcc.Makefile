@@ -35,7 +35,7 @@ PRJ_OBJECTS := $(addprefix $(OUTPUT_DIR)/, $(PRJ_SOURCE:.c=.rel))
 SPL_ROOT    = ../spl/STM8S_StdPeriph_Driver
 SPL_SRC_DIR = $(SPL_ROOT)/src
 SPL_INC_DIR = $(SPL_ROOT)/inc
-SPL_SOURCE  = stm8s_gpio.c
+SPL_SOURCE  = stm8s_gpio.c stm8s_clk.c stm8s_tim4.c
 SPL_OBJECTS := $(addprefix $(OUTPUT_DIR)/, $(SPL_SOURCE:.c=.rel))
 
 # COMMON_INC = ../common
