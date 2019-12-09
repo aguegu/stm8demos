@@ -16,10 +16,10 @@
 
 // TEST LED between vcc and PB5
 
-#define SLAVE_ADDRESS 0x6c
-// 7-bit address: 0x36
+#define SLAVE_ADDRESS 0x62
+// 7-bit address: 0x32
 
-const static uint8_t numbers[10] = {
+const static uint8_t numbers[] = {
   0x3f, 0x06, 0x5b, 0x4f, 0x66, // 0-4
   0x6d, 0x7d, 0x07 ,0x7f, 0x6f, // 5-9
   0x5f, 0x7c, 0x58, 0x5e, 0x79, 0x71, // a-f
@@ -104,6 +104,7 @@ void main(void) {
   }
 
   patterns[0] = numbers[(SLAVE_ADDRESS >> 1) & 0x0f];
+  // patterns[0] = 0x5f;
   patterns[1] = numbers[(SLAVE_ADDRESS >> 1) >> 4];
   patterns[2] = 0;
   patterns[3] = 0;
